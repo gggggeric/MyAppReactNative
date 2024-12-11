@@ -1,14 +1,30 @@
 import React, { useState } from 'react';
 import { Text, View, StyleSheet } from 'react-native';
-import axios from 'axios'; 
-import { TextInput, Button, Snackbar, IconButton } from 'react-native-paper'; // Import MUI components from React Native Paper
+import axios from 'axios';
+import { TextInput, Button, Snackbar, IconButton } from 'react-native-paper';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';  // Import StackNavigationProp type
+import { useAuth } from '../context/AuthContext';  // Import AuthContext
+
+// Define the types for navigation params
+type RootStackParamList = {
+  Home: undefined;
+  Login: undefined;
+  Register: undefined;
+};
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [passwordVisible, setPasswordVisible] = useState(false); // State to toggle password visibility
+  const [passwordVisible, setPasswordVisible] = useState(false);
+
+  // Type the navigation prop here
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+
+  const { setIsLoggedIn } = useAuth();  // Access setIsLoggedIn from context
 
   const showSnackbar = (message: string) => {
     setSnackbarMessage(message);
@@ -23,7 +39,12 @@ export default function LoginScreen() {
       });
 
       if (response.status === 200) {
+        const { token } = response.data; // Extract token from response
+        await AsyncStorage.setItem('token', token); // Store the token
+        console.log('Stored token:', token); // Check if token is saved
+        setIsLoggedIn(true);  // Update login state using context
         showSnackbar('Login successful!');
+        navigation.navigate('Home'); // Navigate to Home screen after successful login
       } else {
         showSnackbar('Login failed: Unexpected response.');
       }
@@ -39,7 +60,7 @@ export default function LoginScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Login</Text>
-      
+
       <TextInput
         label="Email"
         value={email}
@@ -49,7 +70,7 @@ export default function LoginScreen() {
         keyboardType="email-address"
         autoCapitalize="none"
       />
-      
+
       <View style={styles.passwordContainer}>
         <TextInput
           label="Password"
@@ -67,16 +88,16 @@ export default function LoginScreen() {
           style={styles.eyeIcon}
         />
       </View>
-      
-      <Button 
-        mode="contained" 
-        onPress={handleLogin} 
+
+      <Button
+        mode="contained"
+        onPress={handleLogin}
         style={styles.button}
         labelStyle={styles.buttonText}
       >
         Login
       </Button>
-      
+
       <Snackbar
         visible={snackbarVisible}
         onDismiss={() => setSnackbarVisible(false)}

@@ -1,8 +1,13 @@
 import React from 'react';
+import { AuthProvider } from './context/AuthContext'; // Import the AuthProvider
 import DrawerNavigator from './navigation/DrawerNavigator';
 
 export default function Index() {
-  return <DrawerNavigator />;
+  return (
+    <AuthProvider>  {/* Wrap the application with AuthProvider */}
+      <DrawerNavigator />
+    </AuthProvider>
+  );
 }
 
 export const screenOptions = {
