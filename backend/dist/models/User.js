@@ -69,8 +69,16 @@ const userSchema = new mongoose_1.Schema({
         type: Date,
         default: Date.now,
     },
+    userType: {
+        type: String,
+        enum: ['user', 'admin', 'moderator'],
+        default: 'user',
+    },
+    profileImage: {
+        type: String,
+        default: null,
+    },
 }, { timestamps: true });
-// Hash password before saving to database
 userSchema.pre('save', function (next) {
     return __awaiter(this, void 0, void 0, function* () {
         if (this.isModified('password')) {

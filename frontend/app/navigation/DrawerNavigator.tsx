@@ -50,7 +50,7 @@ const DrawerNavigator = () => {
     const intervalId = setInterval(() => {
       checkToken(); 
     }, 1000); 
-
+      
     return () => clearInterval(intervalId); // Cleanup when the component unmounts
   }, []);
 

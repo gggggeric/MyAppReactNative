@@ -6,6 +6,8 @@ interface IUser extends Document {
   email: string;
   password: string;
   createdAt: Date;
+  userType: 'user' | 'admin' | 'moderator'; 
+  profileImage: string | null; 
 }
 
 const userSchema = new Schema<IUser>({
@@ -30,9 +32,18 @@ const userSchema = new Schema<IUser>({
     type: Date,
     default: Date.now,
   },
+  userType: {
+    type: String,
+    enum: ['user', 'admin', 'moderator'],
+    default: 'user', 
+  },
+  profileImage: {
+    type: String,
+    default: null, 
+  },
 }, { timestamps: true });
 
-// Hash password before saving to database
+
 userSchema.pre<IUser>('save', async function(next) {
   if (this.isModified('password')) {
     const hashedPassword = await bcrypt.hash(this.password, 10);
