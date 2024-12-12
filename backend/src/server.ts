@@ -4,6 +4,10 @@ import express, { Request, Response } from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import authRoutes from './routes/authRoutes'; 
+import userRoutes from './routes/userRoutes'; 
+import cloudinary from './config/cloudinary';
+
+
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT;
@@ -43,6 +47,9 @@ app.get('/', (req: Request, res: Response) => {
 
 //Login and Register Routes
 app.use('/api/auth', authRoutes);
+
+//User routes
+app.use('/api/user', userRoutes);
 
 
 app.listen(PORT, () => {

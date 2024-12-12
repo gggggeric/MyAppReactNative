@@ -30,7 +30,6 @@ export const registerUser = async (req: Request, res: Response): Promise<Respons
   }
 };
 
-
 export const loginUser = async (req: Request, res: Response): Promise<Response> => {
   const { email, password } = req.body;
 
@@ -57,11 +56,13 @@ export const loginUser = async (req: Request, res: Response): Promise<Response> 
     return res.status(200).json({
       message: 'Login successful',
       token,
+      userId: user._id, // Explicitly include userId in the response
       user: {
         name: user.name,
         email: user.email,
       },
     });
+    
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Server error' });
