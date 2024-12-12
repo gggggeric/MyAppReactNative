@@ -58,6 +58,7 @@ const loginUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         return res.status(200).json({
             message: 'Login successful',
             token,
+            userId: user._id, // Explicitly include userId in the response
             user: {
                 name: user.name,
                 email: user.email,
