@@ -6,6 +6,7 @@ import { Alert } from 'react-native';
 import HomeScreen from '../screens/Home';
 import LoginScreen from '../screens/Login';
 import RegisterScreen from '../screens/Register';
+import ProfileScreen from '../screens/Profile';  // Add Profile Screen import
 import { useAuth } from '../context/AuthContext'; 
 
 const Drawer = createDrawerNavigator();
@@ -16,17 +17,20 @@ const CustomDrawerContent = (props: any) => {
   return (
     <DrawerContentScrollView {...props}>
       <DrawerItemList {...props} />
-      {isLoggedIn && ( // Show logout only if user is logged in
-        <DrawerItem
-          label="Logout"
-          icon={({ color, size }) => (
-            <Ionicons name="log-out-outline" size={size} color={color} />
-          )}
-          onPress={handleLogout}
-          style={{
-            marginTop: 'auto',
-          }}
-        />
+      
+      {isLoggedIn && ( // Show logout and profile options only if the user is logged in
+        <>
+          <DrawerItem
+            label="Logout"
+            icon={({ color, size }) => (
+              <Ionicons name="log-out-outline" size={size} color={color} />
+            )}
+            onPress={handleLogout}
+            style={{
+              marginTop: 'auto',
+            }}
+          />
+        </>
       )}
     </DrawerContentScrollView>
   );
@@ -119,6 +123,19 @@ const DrawerNavigator = () => {
             }}
           />
         </>
+      )}
+
+      {/* Profile Screen, only accessible when logged in */}
+      {isLoggedIn && (
+        <Drawer.Screen
+          name="Profile"
+          component={ProfileScreen}  // Profile Screen component
+          options={{
+            drawerIcon: ({ color, size }) => (
+              <Ionicons name="person-outline" size={size} color={color} />
+            ),
+          }}
+        />
       )}
     </Drawer.Navigator>
   );

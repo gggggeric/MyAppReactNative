@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Text, View, StyleSheet } from 'react-native';
+import { Text, View, StyleSheet, TouchableOpacity } from 'react-native';
 import axios from 'axios';
 import { TextInput, Button, Snackbar, IconButton } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -33,16 +33,22 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     try {
-      const response = await axios.post('http://:5000/api/auth/login', {
+      const response = await axios.post('http://192.168.15.28:5000/api/auth/login', {
         email,
         password,
       });
 
       if (response.status === 200) {
-        const { token } = response.data; // Extract token from response
-        await AsyncStorage.setItem('token', token); // Store the token
+        const { token, userId } = response.data; // Extract token and userId from response
+
+        // Store the token and userId
+        await AsyncStorage.setItem('token', token);
+        await AsyncStorage.setItem('userId', userId); // Store the userId
+
         console.log('Stored token:', token); // Check if token is saved
-        setIsLoggedIn(true);  // Update login state using context
+        console.log('Stored userId:', userId); // Check if userId is saved
+
+        setIsLoggedIn(true); // Update login state using context
         showSnackbar('Login successful!');
         navigation.navigate('Home'); // Navigate to Home screen after successful login
       } else {
@@ -98,6 +104,10 @@ export default function LoginScreen() {
         Login
       </Button>
 
+      <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+        <Text style={styles.registerText}>Don't have an account? Register here</Text>
+      </TouchableOpacity>
+
       <Snackbar
         visible={snackbarVisible}
         onDismiss={() => setSnackbarVisible(false)}
@@ -147,5 +157,11 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#fff',
     fontSize: 16,
+  },
+  registerText: {
+    marginTop: 20,
+    fontSize: 14,
+    color: '#6200ee',
+    textDecorationLine: 'underline',
   },
 });
