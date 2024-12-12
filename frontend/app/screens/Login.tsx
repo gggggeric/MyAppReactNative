@@ -125,13 +125,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 16,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#15202B',
   },
   title: {
     fontSize: 28,
     marginBottom: 20,
     fontWeight: '600',
-    color: '#333',
+    color: '#FFFFFF',
   },
   input: {
     width: '100%',
@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
   registerText: {
     marginTop: 20,
     fontSize: 14,
-    color: '#6200ee',
+    color: '#FFFFFF',
     textDecorationLine: 'underline',
   },
 });

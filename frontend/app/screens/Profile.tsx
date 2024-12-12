@@ -1,23 +1,25 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Alert } from 'react-native';
+import { View, Text, StyleSheet, Alert, Modal, TouchableOpacity } from 'react-native';
 import { TextInput, Button, Avatar, Snackbar } from 'react-native-paper';
+import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ProfileScreen = () => {
-  const [name, setName] = useState(''); // Track the name
+  const [name, setName] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [profileImage, setProfileImage] = useState<string | null>(null);
-  const [imageName, setImageName] = useState<string>(''); // To store image name
   const [snackBarVisible, setSnackBarVisible] = useState(false);
   const [snackBarMessage, setSnackBarMessage] = useState('');
+  const [modalVisible, setModalVisible] = useState(false);
 
-  // Function to pick an image from the gallery or camera
+  const openModal = () => setModalVisible(true);
+  const closeModal = () => setModalVisible(false);
+
   const pickImage = async () => {
-    // Request permission to access media
+    closeModal();
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
     if (permissionResult.granted === false) {
       Alert.alert('Permission Denied', 'You need to allow media permissions to select an image.');
       return;
@@ -30,21 +32,36 @@ const ProfileScreen = () => {
       quality: 1,
     });
 
-    // Check if the image is selected (not canceled)
     if (!result.canceled) {
-      const imageUri = result.assets[0].uri; // This is the local path of the image
-      const imageName = result.assets[0].fileName || imageUri.split('/').pop() || 'profile-image'; // Derive name
-
-      setProfileImage(imageUri); // Set the selected image URI
-      setImageName(imageName);   // Set the image name
-      console.log('Selected image:', imageName); // Log the selected image name
+      const imageUri = result.assets[0].uri;
+      setProfileImage(imageUri);
     }
   };
 
-  // Function to remove the profile image
+  const takePhoto = async () => {
+    closeModal();
+    const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+    if (permissionResult.granted === false) {
+      Alert.alert('Permission Denied', 'You need to allow camera permissions to take a photo.');
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      const imageUri = result.assets[0].uri;
+      setProfileImage(imageUri);
+    }
+  };
+
   const removeProfileImage = () => {
-    setProfileImage(null); // Reset the profile image
-    setImageName(''); // Reset the image name
+    closeModal();
+    setProfileImage(null);
   };
 
   const handleSaveProfile = async () => {
@@ -58,15 +75,10 @@ const ProfileScreen = () => {
     if (newPassword) formData.append('password', newPassword);
 
     if (profileImage) {
-      // Fetch the image as a blob
       const imageResponse = await fetch(profileImage);
       const imageBlob = await imageResponse.blob();
-
-      // Get the image file type from the URI (e.g., .jpg, .png)
       const uriParts = profileImage.split('.');
       const fileType = uriParts[uriParts.length - 1];
-
-      // Append the image to FormData
       formData.append('profileImage', imageBlob, `profileImage.${fileType}`);
     }
 
@@ -93,34 +105,36 @@ const ProfileScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Profile Screen</Text>
+      <Text style={styles.title}>My Profile</Text>
 
-      {/* Profile Image Section */}
       <View style={styles.imageContainer}>
         <Avatar.Image
           size={150}
-          source={profileImage ? { uri: profileImage } : require('../assets/default-avatar.png')}
+          source={profileImage ? { uri: profileImage } : require('../assets/default-avatar-2.png')}
           style={styles.profileImage}
         />
-        <Button mode="outlined" onPress={pickImage} style={styles.button}>
-          Change Profile Image
-        </Button>
-
-        {/* Remove Profile Image Button */}
-        {profileImage && (
-          <Button mode="outlined" onPress={removeProfileImage} style={styles.button}>
-            Remove Profile Image
-          </Button>
-        )}
+        <TouchableOpacity style={styles.iconButton} onPress={openModal}>
+          <MaterialIcons name="camera-alt" size={24} color="black" />
+        </TouchableOpacity>
       </View>
 
-      {/* Image name and URI */}
-      {profileImage && (
-        <View style={styles.imageInfoContainer}>
-          <Text style={styles.imageInfoText}>Image Name: {imageName}</Text>
-          <Text style={styles.imageInfoText}>Image URI: {profileImage}</Text>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={closeModal}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Button onPress={takePhoto} style={styles.modalButton}>Take a Photo</Button>
+            <Button onPress={pickImage} style={styles.modalButton}>Upload a Photo</Button>
+            {profileImage && (
+              <Button onPress={removeProfileImage} style={styles.modalButton}>Remove Photo</Button>
+            )}
+            <Button onPress={closeModal} style={styles.modalButton}>Cancel</Button>
+          </View>
         </View>
-      )}
+      </Modal>
 
       <TextInput
         label="Name"
@@ -129,7 +143,6 @@ const ProfileScreen = () => {
         style={styles.input}
       />
 
-      {/* New Password Section */}
       <TextInput
         label="New Password"
         value={newPassword}
@@ -138,12 +151,10 @@ const ProfileScreen = () => {
         style={styles.input}
       />
 
-      {/* Save Button */}
       <Button mode="contained" onPress={handleSaveProfile} style={styles.button}>
         Save Profile
       </Button>
 
-      {/* Snackbar for success message */}
       <Snackbar
         visible={snackBarVisible}
         onDismiss={() => setSnackBarVisible(false)}
@@ -161,12 +172,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-    backgroundColor: '#fff',
+    backgroundColor: '#15202B', // Twitter blue for the background
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
+    color: '#fff', // White color for the title text
   },
   imageContainer: {
     alignItems: 'center',
@@ -175,22 +187,53 @@ const styles = StyleSheet.create({
   profileImage: {
     marginBottom: 10,
   },
-  imageInfoContainer: {
-    alignItems: 'center',
-    marginBottom: 20,
+  iconButton: {
+    position: 'absolute',
+    bottom: 10,
+    right: 10,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 5,
+    elevation: 2,
   },
-  imageInfoText: {
-    fontSize: 16,
-    color: '#333',
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Dark overlay for the modal background
+  },
+  modalContent: {
+    width: '80%',
+    backgroundColor: '#15202B', // Twitter blue background for modal
+    borderRadius: 10,
+    padding: 20,
+    alignItems: 'center',
+  },
+  modalButton: {
+    width: '100%',
+    marginVertical: 10,
+    backgroundColor: '#fff', // White buttons in the modal
+    color: '#1DA1F2', // Twitter blue text on the button
   },
   input: {
     width: '100%',
     marginBottom: 20,
+    borderColor: '#fff', // White border for the input fields
+    borderWidth: 1,
+    color: '#fff', // White text inside the input field
   },
   button: {
     width: '100%',
     marginBottom: 20,
+    backgroundColor: '#fff', // White button for saving profile
+    color: '#1DA1F2', // Twitter blue text
+  },
+  buttonText: {
+    color: '#1DA1F2', // Twitter blue text color for the button text
   },
 });
+
+
+
 
 export default ProfileScreen;
